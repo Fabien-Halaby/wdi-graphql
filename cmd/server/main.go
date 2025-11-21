@@ -20,12 +20,9 @@ func main() {
 
 	db := database.New()
 
-	_ = db
-
 	CountryRepository := repository.NewCountryRepository(db)
 	CountryUsecase := usecase.NewCountryUsecase(CountryRepository)
 
-	//! Resolver GraphQL avec DB injectée
 	resolver := &graph.Resolver{
 		CountryUC: CountryUsecase,
 	}
