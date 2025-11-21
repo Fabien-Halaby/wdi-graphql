@@ -15,7 +15,7 @@ func (r *queryResolver) Hello(ctx context.Context) (string, error) {
 }
 
 // Countries is the resolver for the countries field.
-func (r *queryResolver) Countries(ctx context.Context, limit *int32, offset *int32) ([]*model.Country, error) {
+func (r *queryResolver) Countries(ctx context.Context, search *string, limit *int32, offset *int32) ([]*model.Country, error) {
 	lim, off := int32(10), int32(10)
 	if limit != nil {
 		lim = *limit
@@ -23,7 +23,7 @@ func (r *queryResolver) Countries(ctx context.Context, limit *int32, offset *int
 	if offset != nil {
 		off = *offset
 	}
-	countries, err := r.CountryUC.GetAllCountries(lim, off)
+	countries, err := r.CountryUC.GetAllCountries(*search, lim, off)
 	if err != nil {
 		return nil, err
 	}

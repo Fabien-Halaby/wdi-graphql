@@ -12,5 +12,5 @@ type Country {
 
 type Query {
   hello: String!
-  countries(limit: Int = 10, offset: Int = 10): [Country!]!
+  countries(search: String ,limit: Int = 10, offset: Int = 10): [Country!]!
 }

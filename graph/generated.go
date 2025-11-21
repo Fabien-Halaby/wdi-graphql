@@ -59,14 +59,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Countries func(childComplexity int, limit *int32, offset *int32) int
+		Countries func(childComplexity int, search *string, limit *int32, offset *int32) int
 		Hello     func(childComplexity int) int
 	}
 }
 
 type QueryResolver interface {
 	Hello(ctx context.Context) (string, error)
-	Countries(ctx context.Context, limit *int32, offset *int32) ([]*model.Country, error)
+	Countries(ctx context.Context, search *string, limit *int32, offset *int32) ([]*model.Country, error)
 }
 
 type executableSchema struct {
@@ -153,7 +153,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Countries(childComplexity, args["limit"].(*int32), args["offset"].(*int32)), true
+		return e.complexity.Query.Countries(childComplexity, args["search"].(*string), args["limit"].(*int32), args["offset"].(*int32)), true
 	case "Query.hello":
 		if e.complexity.Query.Hello == nil {
 			break
@@ -283,16 +283,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_countries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "limit", ec.unmarshalOInt2ᚖint32)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "search", ec.unmarshalOString2ᚖstring)
 	if err != nil {
 		return nil, err
 	}
-	args["limit"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "offset", ec.unmarshalOInt2ᚖint32)
+	args["search"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "limit", ec.unmarshalOInt2ᚖint32)
 	if err != nil {
 		return nil, err
 	}
-	args["offset"] = arg1
+	args["limit"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "offset", ec.unmarshalOInt2ᚖint32)
+	if err != nil {
+		return nil, err
+	}
+	args["offset"] = arg2
 	return args, nil
 }
 
@@ -646,7 +651,7 @@ func (ec *executionContext) _Query_countries(ctx context.Context, field graphql.
 		ec.fieldContext_Query_countries,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().Countries(ctx, fc.Args["limit"].(*int32), fc.Args["offset"].(*int32))
+			return ec.resolvers.Query().Countries(ctx, fc.Args["search"].(*string), fc.Args["limit"].(*int32), fc.Args["offset"].(*int32))
 		},
 		nil,
 		ec.marshalNCountry2ᚕᚖwdiᚋgraphᚋmodelᚐCountryᚄ,

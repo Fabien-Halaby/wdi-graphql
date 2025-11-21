@@ -13,8 +13,8 @@ func NewCountryUsecase(r *repository.CountryRepository) *CountryUsecase {
 	return &CountryUsecase{repo: r}
 }
 
-func (u *CountryUsecase) GetAllCountries(limit, offset int32) ([]*model.Country, error) {
-	countries, err := u.repo.FindAll(limit, offset)
+func (u *CountryUsecase) GetAllCountries(search string, limit, offset int32) ([]*model.Country, error) {
+	countries, err := u.repo.FindAll(&search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
