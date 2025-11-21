@@ -1,0 +1,16 @@
+type Country {
+  CountryCode: String!
+  ShortName: String!
+  TableName: String!
+  LongName: String!
+  Alpha2Code: String!
+  CurrencyUnit: String!
+  SpecialNotes: String!
+  Region: String!
+  IncomeGroup: String!
+}
+
+type Query {
+  hello: String!
+  countries: [Country!]!
+}
