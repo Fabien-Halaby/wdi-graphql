@@ -12,6 +12,11 @@ type Country struct {
 	CurrencyUnit *string `gorm:"column:CurrencyUnit"`
 }
 
+type RegionCount struct {
+	Region string `gorm:"column:Region" json:"Region"`
+	Count  int    `gorm:"column:Count" json:"Count"`
+}
+
 func (Country) TableName() string {
 	return "Country"
 }

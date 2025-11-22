@@ -10,7 +10,34 @@ type Country {
   IncomeGroup: String!
 }
 
+# Nb of country per region
+type RegionCount {
+  region: String!
+  count: Int!
+}
+
 type Query {
   hello: String!
-  countries(search: String ,limit: Int = 10, offset: Int = 10): [Country!]!
+
+  countries(
+    search: String
+    region: String
+    incomeGroup: String
+    limit: Int = 10
+    offset: Int = 0
+  ): [Country!]!
+
+  country(code: String!): Country
+
+  regions: [String!]!
+
+  incomeGroups: [String!]!
+
+  countryCount: Int!
+
+  regionCounts: [RegionCount!]!
+
+  countriesByCodes(codes: [String!]!): [Country!]!
+
+  autocompleteCountries(prefix: String!, limit: Int = 10): [Country!]!
 }

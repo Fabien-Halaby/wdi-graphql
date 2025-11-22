@@ -15,20 +15,76 @@ func (r *queryResolver) Hello(ctx context.Context) (string, error) {
 }
 
 // Countries is the resolver for the countries field.
-func (r *queryResolver) Countries(ctx context.Context, search *string, limit *int32, offset *int32) ([]*model.Country, error) {
-	lim, off := int32(10), int32(10)
+func (r *queryResolver) Countries(ctx context.Context, search *string, region *string, incomeGroup *string, limit *int32, offset *int32) ([]*model.Country, error) {
+	lim := int32(10)
+	off := int32(0)
 	if limit != nil {
-		lim = *limit
+		lim = int32(*limit)
 	}
 	if offset != nil {
-		off = *offset
+		off = int32(*offset)
 	}
-	countries, err := r.CountryUC.GetAllCountries(*search, lim, off)
+
+	return r.CountryUC.GetAllCountries(search, region, incomeGroup, lim, off)
+}
+
+// Country is the resolver for the country field.
+func (r *queryResolver) Country(ctx context.Context, code string) (*model.Country, error) {
+	country, err := r.CountryUC.FindByCode(code)
 	if err != nil {
 		return nil, err
 	}
 
-	return countries, nil
+	return country, nil
+}
+
+// Regions is the resolver for the regions field.
+func (r *queryResolver) Regions(ctx context.Context) ([]string, error) {
+	regions, err := r.CountryUC.GetAllRegions()
+	if err != nil {
+		return nil, err
+	}
+
+	return regions, nil
+}
+
+// IncomeGroups is the resolver for the incomeGroups field.
+func (r *queryResolver) IncomeGroups(ctx context.Context) ([]string, error) {
+	incomeGroups, err := r.CountryUC.GetAllIncomeGroups()
+	if err != nil {
+		return nil, err
+	}
+
+	return incomeGroups, nil
+}
+
+// CountryCount is the resolver for the countryCount field.
+func (r *queryResolver) CountryCount(ctx context.Context) (int32, error) {
+	nb, err := r.CountryUC.GetNumberOfAllCountry()
+	if err != nil {
+		return 0, err
+	}
+	return int32(nb), nil
+}
+
+// RegionCounts is the resolver for the regionCounts field.
+func (r *queryResolver) RegionCounts(ctx context.Context) ([]*model.RegionCount, error) {
+	return r.CountryUC.GetNumberOfCountryPerRegion()
+}
+
+// CountriesByCodes is the resolver for the countriesByCodes field.
+func (r *queryResolver) CountriesByCodes(ctx context.Context, codes []string) ([]*model.Country, error) {
+	return r.CountryUC.GetCountriesByCodes(codes)
+}
+
+// AutocompleteCountries is the resolver for the autocompleteCountries field.
+func (r *queryResolver) AutocompleteCountries(ctx context.Context, prefix string, limit *int32) ([]*model.Country, error) {
+	lim := int(10)
+	if limit != nil {
+		lim = int(*limit)
+	}
+
+	return r.CountryUC.GetAutocompleteCountries(prefix, lim)
 }
 
 // Query returns QueryResolver implementation.

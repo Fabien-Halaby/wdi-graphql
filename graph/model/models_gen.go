@@ -16,3 +16,8 @@ type Country struct {
 
 type Query struct {
 }
+
+type RegionCount struct {
+	Region string `json:"region"`
+	Count  int32  `json:"count"`
+}
