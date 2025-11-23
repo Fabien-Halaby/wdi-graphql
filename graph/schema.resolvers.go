@@ -40,27 +40,17 @@ func (r *queryResolver) Country(ctx context.Context, code string) (*model.Countr
 
 // Regions is the resolver for the regions field.
 func (r *queryResolver) Regions(ctx context.Context) ([]string, error) {
-	regions, err := r.CountryUC.GetAllRegions()
-	if err != nil {
-		return nil, err
-	}
-
-	return regions, nil
+	return r.CountryUC.ListRegions()
 }
 
 // IncomeGroups is the resolver for the incomeGroups field.
 func (r *queryResolver) IncomeGroups(ctx context.Context) ([]string, error) {
-	incomeGroups, err := r.CountryUC.GetAllIncomeGroups()
-	if err != nil {
-		return nil, err
-	}
-
-	return incomeGroups, nil
+	return r.CountryUC.ListIncomeGroups()
 }
 
 // CountryCount is the resolver for the countryCount field.
 func (r *queryResolver) CountryCount(ctx context.Context) (int32, error) {
-	nb, err := r.CountryUC.GetNumberOfAllCountry()
+	nb, err := r.CountryUC.CountCountries()
 	if err != nil {
 		return 0, err
 	}
@@ -69,7 +59,7 @@ func (r *queryResolver) CountryCount(ctx context.Context) (int32, error) {
 
 // RegionCounts is the resolver for the regionCounts field.
 func (r *queryResolver) RegionCounts(ctx context.Context) ([]*model.RegionCount, error) {
-	return r.CountryUC.GetNumberOfCountryPerRegion()
+	return r.CountryUC.CountByRegion()
 }
 
 // CountriesByCodes is the resolver for the countriesByCodes field.
@@ -85,6 +75,11 @@ func (r *queryResolver) AutocompleteCountries(ctx context.Context, prefix string
 	}
 
 	return r.CountryUC.GetAutocompleteCountries(prefix, lim)
+}
+
+// Indicators is the resolver for the indicators field.
+func (r *queryResolver) Indicators(ctx context.Context) ([]*model.Indicator, error) {
+	return r.IndicatorUC.ListIndicators()
 }
 
 // Query returns QueryResolver implementation.

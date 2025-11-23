@@ -3,6 +3,7 @@ package usecase
 import (
 	"fmt"
 	"wdi/graph/model"
+	"wdi/internal/entity"
 	"wdi/internal/repository"
 )
 
@@ -22,17 +23,7 @@ func (u *CountryUsecase) GetAutocompleteCountries(prefix string, limit int) ([]*
 
 	result := make([]*model.Country, 0, len(countries))
 	for _, c := range countries {
-		result = append(result, &model.Country{
-			CountryCode:  c.CountryCode,
-			ShortName:    c.ShortName,
-			TableName:    derefStr(c.TableNameDb),
-			LongName:     derefStr(c.LongName),
-			Alpha2Code:   derefStr(c.Alpha2Code),
-			CurrencyUnit: derefStr(c.CurrencyUnit),
-			SpecialNotes: derefStr(c.SpecialNotes),
-			Region:       derefStr(c.Region),
-			IncomeGroup:  derefStr(c.IncomeGroup),
-		})
+		result = append(result, mapCountryEntityToModel(c))
 	}
 
 	return result, nil
@@ -45,29 +36,22 @@ func (u *CountryUsecase) GetCountriesByCodes(codes []string) ([]*model.Country, 
 	}
 	result := make([]*model.Country, 0, len(countries))
 	for _, c := range countries {
-		result = append(result, &model.Country{
-			CountryCode:  c.CountryCode,
-			ShortName:    c.ShortName,
-			TableName:    derefStr(c.TableNameDb),
-			LongName:     derefStr(c.LongName),
-			Alpha2Code:   derefStr(c.Alpha2Code),
-			CurrencyUnit: derefStr(c.CurrencyUnit),
-			SpecialNotes: derefStr(c.SpecialNotes),
-			Region:       derefStr(c.Region),
-			IncomeGroup:  derefStr(c.IncomeGroup),
-		})
+		result = append(result, mapCountryEntityToModel(c))
 	}
 
 	return result, nil
 }
 
-func (u *CountryUsecase) GetNumberOfCountryPerRegion() ([]*model.RegionCount, error) {
-	rgcs, err := u.repo.GetNumberOfCountryPerRegion()
+func (u *CountryUsecase) CountByRegion() ([]*model.RegionCount, error) {
+	rgcs, err := u.repo.CountByRegion()
 	if err != nil {
 		return nil, err
 	}
 	result := make([]*model.RegionCount, 0, len(rgcs))
 	for _, r := range rgcs {
+		if r.Region == "" {
+			r.Region = "Uknown"
+		}
 		result = append(result, &model.RegionCount{
 			Region: r.Region,
 			Count:  int32(r.Count),
@@ -77,16 +61,27 @@ func (u *CountryUsecase) GetNumberOfCountryPerRegion() ([]*model.RegionCount, er
 	return result, nil
 }
 
-func (u *CountryUsecase) GetNumberOfAllCountry() (int, error) {
-	return u.repo.GetNumberOfAllCountry()
+func (u *CountryUsecase) CountCountries() (int, error) {
+	return u.repo.CountCountries()
 }
 
-func (u *CountryUsecase) GetAllIncomeGroups() ([]string, error) {
-	return u.repo.GetAllIncomeGroups()
+func (u *CountryUsecase) ListIncomeGroups() ([]string, error) {
+	return u.repo.ListIncomeGroups()
 }
 
-func (u *CountryUsecase) GetAllRegions() ([]string, error) {
-	return u.repo.GetAllRegions()
+func (u *CountryUsecase) ListRegions() ([]string, error) {
+	regions, err := u.repo.ListRegions()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range regions {
+		if regions[i] == "" {
+			regions[i] = "Unkown"
+		}
+	}
+
+	return regions, nil
 }
 
 func (u *CountryUsecase) GetAllCountries(search, region, incomeGroup *string, limit, offset int32) ([]*model.Country, error) {
@@ -97,17 +92,7 @@ func (u *CountryUsecase) GetAllCountries(search, region, incomeGroup *string, li
 
 	result := make([]*model.Country, 0, len(countries))
 	for _, c := range countries {
-		result = append(result, &model.Country{
-			CountryCode:  c.CountryCode,
-			ShortName:    c.ShortName,
-			TableName:    derefStr(c.TableNameDb),
-			LongName:     derefStr(c.LongName),
-			Alpha2Code:   derefStr(c.Alpha2Code),
-			CurrencyUnit: derefStr(c.CurrencyUnit),
-			SpecialNotes: derefStr(c.SpecialNotes),
-			Region:       derefStr(c.Region),
-			IncomeGroup:  derefStr(c.IncomeGroup),
-		})
+		result = append(result, mapCountryEntityToModel(c))
 	}
 
 	return result, nil
@@ -115,7 +100,7 @@ func (u *CountryUsecase) GetAllCountries(search, region, incomeGroup *string, li
 
 func (u *CountryUsecase) FindByCode(code string) (*model.Country, error) {
 	if code == "" {
-		return nil, fmt.Errorf("failed to gagner l'ordinateur")
+		return nil, fmt.Errorf("country code is required")
 	}
 
 	country, err := u.repo.FindByCode(code)
@@ -123,17 +108,7 @@ func (u *CountryUsecase) FindByCode(code string) (*model.Country, error) {
 		return nil, err
 	}
 
-	result := &model.Country{
-		CountryCode:  country.CountryCode,
-		ShortName:    country.ShortName,
-		TableName:    derefStr(country.TableNameDb),
-		LongName:     derefStr(country.LongName),
-		Alpha2Code:   derefStr(country.Alpha2Code),
-		CurrencyUnit: derefStr(country.CurrencyUnit),
-		SpecialNotes: derefStr(country.SpecialNotes),
-		Region:       derefStr(country.Region),
-		IncomeGroup:  derefStr(country.IncomeGroup),
-	}
+	result := mapCountryEntityToModel(country)
 
 	return result, nil
 }
@@ -143,4 +118,22 @@ func derefStr(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+func mapCountryEntityToModel(c *entity.Country) *model.Country {
+	if c == nil {
+		return nil
+	}
+
+	return &model.Country{
+		CountryCode:  c.CountryCode,
+		ShortName:    c.ShortName,
+		TableName:    derefStr(c.TableNameDB),
+		LongName:     derefStr(c.LongName),
+		Alpha2Code:   derefStr(c.Alpha2Code),
+		CurrencyUnit: derefStr(c.CurrencyUnit),
+		SpecialNotes: derefStr(c.SpecialNotes),
+		Region:       derefStr(c.Region),
+		IncomeGroup:  derefStr(c.IncomeGroup),
+	}
 }

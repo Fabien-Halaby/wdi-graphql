@@ -7,5 +7,6 @@ package graph
 import "wdi/internal/usecase"
 
 type Resolver struct {
-	CountryUC *usecase.CountryUsecase
+	CountryUC   *usecase.CountryUsecase
+	IndicatorUC *usecase.IndicatorUsecase
 }

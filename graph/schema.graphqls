@@ -16,16 +16,20 @@ type RegionCount {
   count: Int!
 }
 
+# Indicators
+type Indicator {
+  name: String!
+  code: String!
+  year: Int!
+  value: Float!
+  countryCode: String!
+  countryName: String!
+}
+
 type Query {
   hello: String!
 
-  countries(
-    search: String
-    region: String
-    incomeGroup: String
-    limit: Int = 10
-    offset: Int = 0
-  ): [Country!]!
+  countries(search: String, region: String, incomeGroup: String, limit: Int = 10, offset: Int = 0): [Country!]!
 
   country(code: String!): Country
 
@@ -40,4 +44,6 @@ type Query {
   countriesByCodes(codes: [String!]!): [Country!]!
 
   autocompleteCountries(prefix: String!, limit: Int = 10): [Country!]!
+
+  indicators: [Indicator!]!
 }

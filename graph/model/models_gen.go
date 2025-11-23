@@ -14,6 +14,15 @@ type Country struct {
 	IncomeGroup  string `json:"IncomeGroup"`
 }
 
+type Indicator struct {
+	Name        string  `json:"name"`
+	Code        string  `json:"code"`
+	Year        int32   `json:"year"`
+	Value       float64 `json:"value"`
+	CountryCode string  `json:"countryCode"`
+	CountryName string  `json:"countryName"`
+}
+
 type Query struct {
 }
 

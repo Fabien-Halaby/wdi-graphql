@@ -19,7 +19,7 @@ func NewCountryRepository(db *gorm.DB) *CountryRepository {
 func (r *CountryRepository) GetAutocompleteCountries(prefix string, limit int) ([]*entity.Country, error) {
 	var countries []*entity.Country
 	prefix = prefix + "%"
-	if err := r.DB.Raw("SELECT * FROM Country WHERE ShortName LIKE ? OR LongName LIKE ? OR TableName LIKE ? LIMIT ?", prefix, prefix, prefix, limit).Limit(limit).Find(&countries).Error; err != nil {
+	if err := r.DB.Raw("SELECT * FROM Country WHERE ShortName LIKE ? OR LongName LIKE ? OR TableName LIKE ? LIMIT ?", prefix, prefix, prefix, limit).Find(&countries).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("no result matches")
 		}
@@ -35,10 +35,26 @@ func (r *CountryRepository) GetCountriesByCodes(codes []string) ([]*entity.Count
 		return nil, err
 	}
 
+	found := make(map[string]bool, len(countries))
+	for _, c := range countries {
+		found[c.CountryCode] = true
+	}
+
+	missing := make([]string, 0)
+	for _, code := range codes {
+		if !found[code] {
+			missing = append(missing, code)
+		}
+	}
+
+	if len(missing) > 0 {
+		return nil, fmt.Errorf("some country codes not found: %v", missing)
+	}
+
 	return countries, nil
 }
 
-func (r *CountryRepository) GetNumberOfAllCountry() (int, error) {
+func (r *CountryRepository) CountCountries() (int, error) {
 	var nb int
 	if err := r.DB.Raw("SELECT COUNT(*) FROM Country").First(&nb).Error; err != nil {
 		return 0, err
@@ -47,7 +63,7 @@ func (r *CountryRepository) GetNumberOfAllCountry() (int, error) {
 	return nb, nil
 }
 
-func (r *CountryRepository) GetNumberOfCountryPerRegion() ([]*entity.RegionCount, error) {
+func (r *CountryRepository) CountByRegion() ([]*entity.RegionCount, error) {
 	var rgc []*entity.RegionCount
 	if err := r.DB.Raw("SELECT Region, COUNT(*) AS Count FROM Country WHERE Region IS NOT NULL GROUP BY Region").Find(&rgc).Error; err != nil {
 		return nil, err
@@ -56,7 +72,7 @@ func (r *CountryRepository) GetNumberOfCountryPerRegion() ([]*entity.RegionCount
 	return rgc, nil
 }
 
-func (r *CountryRepository) GetAllIncomeGroups() ([]string, error) {
+func (r *CountryRepository) ListIncomeGroups() ([]string, error) {
 	var incomeGroups []string
 	if err := r.DB.Raw("SELECT DISTINCT IncomeGroup FROM Country WHERE IncomeGroup IS NOT NULL AND IncomeGroup <> '' ORDER BY IncomeGroup").First(&incomeGroups).Error; err != nil {
 		return nil, err
@@ -65,9 +81,9 @@ func (r *CountryRepository) GetAllIncomeGroups() ([]string, error) {
 	return incomeGroups, nil
 }
 
-func (r *CountryRepository) GetAllRegions() ([]string, error) {
+func (r *CountryRepository) ListRegions() ([]string, error) {
 	var region []string
-	if err := r.DB.Raw("SELECT DISTINCT Region FROM Country WHERE Region IS NOT NULL AND Region <> '' ORDER BY Region ASC").Find(&region).Error; err != nil {
+	if err := r.DB.Raw("SELECT DISTINCT Region FROM Country WHERE Region IS NOT NULL ORDER BY Region ASC").Find(&region).Error; err != nil {
 		return nil, err
 	}
 

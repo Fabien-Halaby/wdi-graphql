@@ -20,19 +20,21 @@ func main() {
 
 	db := database.New()
 
-	CountryRepository := repository.NewCountryRepository(db)
-	CountryUsecase := usecase.NewCountryUsecase(CountryRepository)
+	countryRepo := repository.NewCountryRepository(db)
+	countryUC := usecase.NewCountryUsecase(countryRepo)
+
+	indicatorRepo := repository.NewIndicatorRepository(db)
+	indicatorUC := usecase.NewIndicatorUsecase(indicatorRepo)
 
 	resolver := &graph.Resolver{
-		CountryUC: CountryUsecase,
+		CountryUC:   countryUC,
+		IndicatorUC: indicatorUC,
 	}
 
-	//! Serveur GraphQL
 	srv := handler.NewDefaultServer(
 		graph.NewExecutableSchema(graph.Config{Resolvers: resolver}),
 	)
 
-	//! Routes HTTP
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
