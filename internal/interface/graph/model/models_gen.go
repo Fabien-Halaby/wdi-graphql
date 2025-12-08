@@ -2,6 +2,13 @@
 
 package model
 
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type Country struct {
 	Countrycode string `json:"countrycode"`
 	Shortname   string `json:"shortname"`
@@ -16,5 +23,83 @@ type IndicatorComparePoint struct {
 	Value2        float64 `json:"value2"`
 }
 
+type IndicatorPoint struct {
+	Year  int32   `json:"year"`
+	Value float64 `json:"value"`
+}
+
+type IndicatorTimeSeries struct {
+	Countrycode   string            `json:"countrycode"`
+	Indicatorcode string            `json:"indicatorcode"`
+	Points        []*IndicatorPoint `json:"points"`
+}
+
 type Query struct {
+}
+
+type TopCountryIndicator struct {
+	Countrycode   string  `json:"countrycode"`
+	Shortname     string  `json:"shortname"`
+	Indicatorcode string  `json:"indicatorcode"`
+	Indicatorname string  `json:"indicatorname"`
+	Region        string  `json:"region"`
+	Value         float64 `json:"value"`
+	Year          int32   `json:"year"`
+	Limit         int32   `json:"limit"`
+	Rank          int32   `json:"rank"`
+}
+
+type SortDirection string
+
+const (
+	SortDirectionAsc  SortDirection = "ASC"
+	SortDirectionDesc SortDirection = "DESC"
+)
+
+var AllSortDirection = []SortDirection{
+	SortDirectionAsc,
+	SortDirectionDesc,
+}
+
+func (e SortDirection) IsValid() bool {
+	switch e {
+	case SortDirectionAsc, SortDirectionDesc:
+		return true
+	}
+	return false
+}
+
+func (e SortDirection) String() string {
+	return string(e)
+}
+
+func (e *SortDirection) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SortDirection(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SortDirection", str)
+	}
+	return nil
+}
+
+func (e SortDirection) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *SortDirection) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e SortDirection) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

@@ -19,7 +19,7 @@ func (r *queryResolver) Hello(ctx context.Context) (string, error) {
 // Countries is the resolver for the countries field.
 func (r *queryResolver) Countries(ctx context.Context) ([]*model.Country, error) {
 	var countries []*model.Country
-	if err := r.DB.Find(&countries).Error; err != nil {
+	if err := r.DB.Table("country").Find(&countries).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch countries: %w", err)
 	}
 	return countries, nil
@@ -28,21 +28,21 @@ func (r *queryResolver) Countries(ctx context.Context) ([]*model.Country, error)
 // CompareIndicator is the resolver for the compareIndicator field.
 func (r *queryResolver) CompareIndicator(ctx context.Context, indicatorcode string, countrycode1 string, countrycode2 string, startyear int32, endyear int32) ([]*model.IndicatorComparePoint, error) {
 	var indicators = []*struct {
-	    Year          int32   `gorm:"column:year"`
-	    IndicatorCode string  `gorm:"column:indicatorcode"`
-	    CountryCode   string  `gorm:"column:countrycode"`
-	    Value         float64 `gorm:"column:value"`
+		Year          int32   `gorm:"column:year"`
+		IndicatorCode string  `gorm:"column:indicatorcode"`
+		CountryCode   string  `gorm:"column:countrycode"`
+		Value         float64 `gorm:"column:value"`
 	}{}
 	if err := r.DB.Table("indicators").
-    	Where(
-  			"countrycode IN ? AND indicatorcode = ? AND year BETWEEN ? AND ?",
-  			[]string{countrycode1, countrycode2},
-  			indicatorcode,
-  			startyear,
-  			endyear,
+		Where(
+			"countrycode IN ? AND indicatorcode = ? AND year BETWEEN ? AND ?",
+			[]string{countrycode1, countrycode2},
+			indicatorcode,
+			startyear,
+			endyear,
 		).
-    	Find(&indicators).Error; err != nil {
-    		return nil, fmt.Errorf("failed to fetch indicator comparison data: %w", err)
+		Find(&indicators).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch indicator comparison data: %w", err)
 	}
 
 	yearCount := make(map[int32]int)
@@ -50,7 +50,7 @@ func (r *queryResolver) CompareIndicator(ctx context.Context, indicatorcode stri
 	for i := range indicators {
 		for j := range indicators {
 			if indicators[i].Year == indicators[j].Year &&
-			   indicators[i].CountryCode != indicators[j].CountryCode {
+				indicators[i].CountryCode != indicators[j].CountryCode {
 				point := &model.IndicatorComparePoint{
 					Year:          indicators[i].Year,
 					Indicatorcode: indicators[i].IndicatorCode,
@@ -71,7 +71,101 @@ func (r *queryResolver) CompareIndicator(ctx context.Context, indicatorcode stri
 			}
 		}
 	}
-	
+
+	return result, nil
+}
+
+// IndicatorTimeSeries is the resolver for the indicatorTimeSeries field.
+func (r *queryResolver) IndicatorTimeSeries(ctx context.Context, countrycode string, indicatorcode string, startyear int32, endyear int32) (*model.IndicatorTimeSeries, error) {
+	type dbPoint struct {
+		Year  int32   `gorm:"column:year"`
+		Value float64 `gorm:"column:value"`
+	}
+	var points []dbPoint
+	if err := r.DB.Table("indicators").
+		Select("year, value").
+		Where(
+			"countrycode = ? AND indicatorcode = ? AND year BETWEEN ? AND ?",
+			countrycode,
+			indicatorcode,
+			startyear,
+			endyear,
+		).
+		Order("year ASC").
+		Find(&points).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch indicator time series data: %w", err)
+	}
+
+	var resultPoints []*model.IndicatorPoint
+	for _, p := range points {
+		resultPoints = append(resultPoints, &model.IndicatorPoint{
+			Year:  p.Year,
+			Value: p.Value,
+		})
+	}
+
+	return &model.IndicatorTimeSeries{
+		Countrycode:   countrycode,
+		Indicatorcode: indicatorcode,
+		Points:        resultPoints,
+	}, nil
+}
+
+// TopCountriesByIndicator is the resolver for the topCountriesByIndicator field.
+func (r *queryResolver) TopCountriesByIndicator(ctx context.Context, indicatorcode string, year int32, limit *int32, sortdirection *model.SortDirection) ([]*model.TopCountryIndicator, error) {
+	type row struct {
+		CountryCode   string   `gorm:"column:countrycode"`
+		ShortName     string   `gorm:"column:shortname"`
+		Region        *string  `gorm:"column:region"`
+		Year          int32    `gorm:"column:year"`
+		IndicatorCode string   `gorm:"column:indicatorcode"`
+		Value         *float64 `gorm:"column:value"`
+	}
+
+	var rows []row
+
+	order := "value DESC"
+    if sortdirection != nil && *sortdirection == model.SortDirectionAsc {
+        order = "value ASC"
+    }
+
+	excludeCodes := []string{
+	    "WLD", "LMY", "MIC", "LMC", "UMC", "HIC", "LIC", "OEC", "LDC",
+		"EUU", "EU27", "ARB", "CEB", "CSS", "ECS", "FCS", "HPC", "IBD",
+		"IBT", "IDB", "IDX", "MEA", "NAC", "NOC", "OSS", "PSS", "SST",
+		"SSF",
+	    "EAS", "EAP", "SAS", "ECA", "MEA", "SSA", "LCN", "OED",
+	}
+	if err := r.DB.
+		Table("indicators i").
+		Select("i.countrycode, c.shortname, c.region, i.year, i.indicatorcode, i.value").
+		Joins("JOIN country c ON c.countrycode = i.countrycode").
+		Where("i.indicatorcode = ? AND i.year = ? AND i.value IS NOT NULL", indicatorcode, year).
+		Where("i.countrycode NOT IN ?", excludeCodes).
+		Order(order).
+		Limit(int(*limit)).
+		Find(&rows).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch top countries: %w", err)
+	}
+
+	result := make([]*model.TopCountryIndicator, 0, len(rows))
+	for i, rrow := range rows {
+		tc := &model.TopCountryIndicator{
+			Countrycode:   rrow.CountryCode,
+			Shortname:     rrow.ShortName,
+			Year:          rrow.Year,
+			Indicatorcode: rrow.IndicatorCode,
+			Rank:          int32(i + 1),
+		}
+		if rrow.Region != nil {
+			tc.Region = *rrow.Region
+		}
+		if rrow.Value != nil {
+			tc.Value = *rrow.Value
+		}
+		result = append(result, tc)
+	}
+
 	return result, nil
 }
 

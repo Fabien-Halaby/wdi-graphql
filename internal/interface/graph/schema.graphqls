@@ -12,9 +12,39 @@ type IndicatorComparePoint {
   value2: Float!
 }
 
+# year and value in indicators
+type IndicatorPoint {
+  year: Int!
+  value: Float!
+}
+type IndicatorTimeSeries {
+  countrycode: String!
+  indicatorcode: String!
+  points: [IndicatorPoint!]!
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+type TopCountryIndicator {
+  countrycode: String!
+  shortname: String!
+  indicatorcode: String!
+  indicatorname: String!
+  region: String!
+  value: Float!
+  year: Int!
+  limit: Int!
+  rank: Int!
+}
+
+
 type Query {
   hello: String!
+
   countries: [Country!]!
+
   compareIndicator(
     indicatorcode: String!
     countrycode1: String!
@@ -22,4 +52,18 @@ type Query {
     startyear: Int!
     endyear: Int!
   ): [IndicatorComparePoint!]!
+
+  indicatorTimeSeries(
+    countrycode: String!
+    indicatorcode: String!
+    startyear: Int!
+    endyear: Int!
+  ): IndicatorTimeSeries!
+
+  topCountriesByIndicator(
+    indicatorcode: String!
+    year: Int!
+    limit: Int = 10
+    sortdirection: SortDirection = DESC
+  ): [TopCountryIndicator!]!  
 }
