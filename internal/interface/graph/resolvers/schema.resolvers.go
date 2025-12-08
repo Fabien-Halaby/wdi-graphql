@@ -6,12 +6,73 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"wdi/internal/interface/graph"
+	"wdi/internal/interface/graph/model"
 )
 
 // Hello is the resolver for the hello field.
 func (r *queryResolver) Hello(ctx context.Context) (string, error) {
 	return "Hello, world!", nil
+}
+
+// Countries is the resolver for the countries field.
+func (r *queryResolver) Countries(ctx context.Context) ([]*model.Country, error) {
+	var countries []*model.Country
+	if err := r.DB.Find(&countries).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch countries: %w", err)
+	}
+	return countries, nil
+}
+
+// CompareIndicator is the resolver for the compareIndicator field.
+func (r *queryResolver) CompareIndicator(ctx context.Context, indicatorcode string, countrycode1 string, countrycode2 string, startyear int32, endyear int32) ([]*model.IndicatorComparePoint, error) {
+	var indicators = []*struct {
+	    Year          int32   `gorm:"column:year"`
+	    IndicatorCode string  `gorm:"column:indicatorcode"`
+	    CountryCode   string  `gorm:"column:countrycode"`
+	    Value         float64 `gorm:"column:value"`
+	}{}
+	if err := r.DB.Table("indicators").
+    	Where(
+  			"countrycode IN ? AND indicatorcode = ? AND year BETWEEN ? AND ?",
+  			[]string{countrycode1, countrycode2},
+  			indicatorcode,
+  			startyear,
+  			endyear,
+		).
+    	Find(&indicators).Error; err != nil {
+    		return nil, fmt.Errorf("failed to fetch indicator comparison data: %w", err)
+	}
+
+	yearCount := make(map[int32]int)
+	var result []*model.IndicatorComparePoint
+	for i := range indicators {
+		for j := range indicators {
+			if indicators[i].Year == indicators[j].Year &&
+			   indicators[i].CountryCode != indicators[j].CountryCode {
+				point := &model.IndicatorComparePoint{
+					Year:          indicators[i].Year,
+					Indicatorcode: indicators[i].IndicatorCode,
+					Countrycode1:  countrycode1,
+					Countrycode2:  countrycode2,
+				}
+				if indicators[i].CountryCode == countrycode1 {
+					point.Value1 = indicators[i].Value
+					point.Value2 = indicators[j].Value
+				} else {
+					point.Value1 = indicators[j].Value
+					point.Value2 = indicators[i].Value
+				}
+				if yearCount[indicators[i].Year] == 0 {
+					result = append(result, point)
+					yearCount[indicators[i].Year]++
+				}
+			}
+		}
+	}
+	
+	return result, nil
 }
 
 // Query returns graph.QueryResolver implementation.

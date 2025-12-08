@@ -2,5 +2,19 @@
 
 package model
 
+type Country struct {
+	Countrycode string `json:"countrycode"`
+	Shortname   string `json:"shortname"`
+}
+
+type IndicatorComparePoint struct {
+	Year          int32   `json:"year"`
+	Indicatorcode string  `json:"indicatorcode"`
+	Countrycode1  string  `json:"countrycode1"`
+	Countrycode2  string  `json:"countrycode2"`
+	Value1        float64 `json:"value1"`
+	Value2        float64 `json:"value2"`
+}
+
 type Query struct {
 }

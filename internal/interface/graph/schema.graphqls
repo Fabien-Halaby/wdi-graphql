@@ -1,3 +1,25 @@
+type Country {
+  countrycode: String!
+  shortname: String!
+}
+
+type IndicatorComparePoint {
+  year: Int!
+  indicatorcode: String!
+  countrycode1: String!
+  countrycode2: String!
+  value1: Float!
+  value2: Float!
+}
+
 type Query {
   hello: String!
+  countries: [Country!]!
+  compareIndicator(
+    indicatorcode: String!
+    countrycode1: String!
+    countrycode2: String!
+    startyear: Int!
+    endyear: Int!
+  ): [IndicatorComparePoint!]!
 }
