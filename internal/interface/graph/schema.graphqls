@@ -1,69 +1,10 @@
-type Country {
-  countrycode: String!
-  shortname: String!
-}
-
-type IndicatorComparePoint {
-  year: Int!
-  indicatorcode: String!
-  countrycode1: String!
-  countrycode2: String!
-  value1: Float!
-  value2: Float!
-}
-
-# year and value in indicators
-type IndicatorPoint {
-  year: Int!
-  value: Float!
-}
-type IndicatorTimeSeries {
-  countrycode: String!
-  indicatorcode: String!
-  points: [IndicatorPoint!]!
-}
-
-enum SortDirection {
-  ASC
-  DESC
-}
-type TopCountryIndicator {
-  countrycode: String!
-  shortname: String!
+type IndicatorList {
   indicatorcode: String!
   indicatorname: String!
-  region: String!
-  value: Float!
-  year: Int!
-  limit: Int!
-  rank: Int!
 }
-
 
 type Query {
   hello: String!
 
-  countries: [Country!]!
-
-  compareIndicator(
-    indicatorcode: String!
-    countrycode1: String!
-    countrycode2: String!
-    startyear: Int!
-    endyear: Int!
-  ): [IndicatorComparePoint!]!
-
-  indicatorTimeSeries(
-    countrycode: String!
-    indicatorcode: String!
-    startyear: Int!
-    endyear: Int!
-  ): IndicatorTimeSeries!
-
-  topCountriesByIndicator(
-    indicatorcode: String!
-    year: Int!
-    limit: Int = 10
-    sortdirection: SortDirection = DESC
-  ): [TopCountryIndicator!]!  
+  GetIndicatorList(search: String!, limit: Int!, offset: Int!): [IndicatorList!]!
 }

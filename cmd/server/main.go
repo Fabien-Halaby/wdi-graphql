@@ -5,8 +5,10 @@ import (
 	"net/http"
 
 	"wdi/internal/infrastructure/db"
+	"wdi/internal/infrastructure/repository"
 	"wdi/internal/interface/graph"
 	"wdi/internal/interface/graph/resolvers"
+	"wdi/internal/usecase"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -21,9 +23,13 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
+	//!
+	indicatorRepo := repository.NewIndicatorRepository(db)
+	indicatorUC := usecase.NewIndicatorUsecase(indicatorRepo)
+
 	//! Set up the GraphQL server
 	resolvers := &resolvers.Resolver{
-		DB: db,
+		IndicatorUC: indicatorUC,
 	}
 	srv := handler.NewDefaultServer(
 		graph.NewExecutableSchema(

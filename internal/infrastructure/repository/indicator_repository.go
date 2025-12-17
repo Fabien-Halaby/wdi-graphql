@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"wdi/internal/entity"
+	entity "wdi/internal/entity/indicator"
 
 	"gorm.io/gorm"
 )
@@ -14,9 +14,9 @@ func NewIndicatorRepository(db *gorm.DB) *IndicatorRepository {
 	return &IndicatorRepository{DB: db}
 }
 
-func (r *IndicatorRepository) ListIndicators() ([]*entity.Indicator, error) {
-	var indicators []*entity.Indicator
-	if err := r.DB.Raw("SELECT * FROM Indicators").Find(&indicators).Error; err != nil {
+func (r *IndicatorRepository) ListIndicators(search string, limit int32, offset int32) ([]*entity.IndicatorList, error) {
+	var indicators []*entity.IndicatorList
+	if err := r.DB.Where("indicatorcode ILIKE ? OR indicatorname ILIKE ?", "%"+search+"%", "%"+search+"%").Limit(int(limit)).Offset(int(offset)).Find(&indicators).Error; err != nil {
 		return nil, err
 	}
 
