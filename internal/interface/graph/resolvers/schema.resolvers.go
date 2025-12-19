@@ -15,9 +15,19 @@ func (r *queryResolver) Hello(ctx context.Context) (string, error) {
 	return "Hello, world!", nil
 }
 
-// GetIndicatorList is the resolver for the GetIndicatorList field.
-func (r *queryResolver) GetIndicatorList(ctx context.Context, search string, limit int32, offset int32) ([]*model.IndicatorList, error) {
+// Indicators is the resolver for the Indicators field.
+func (r *queryResolver) Indicators(ctx context.Context, search string, limit int32, offset int32) ([]*model.Indicator, error) {
 	return r.IndicatorUC.ListIndicators(search, limit, offset)
+}
+
+// IndicatorYears is the resolver for the IndicatorYears field.
+func (r *queryResolver) IndicatorYears(ctx context.Context) ([]*model.IndicatorYear, error) {
+	return r.IndicatorUC.ListIndicatorYears()
+}
+
+// IndicatorBarRace is the resolver for the IndicatorBarRace field.
+func (r *queryResolver) IndicatorBarRace(ctx context.Context, indicatorCode string, limitCountries int32) ([]*model.IndicatorBarRaceRow, error) {
+	return r.IndicatorUC.ListIndicatorBarRace(indicatorCode, limitCountries)
 }
 
 // Query returns graph.QueryResolver implementation.

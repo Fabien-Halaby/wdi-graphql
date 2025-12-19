@@ -46,20 +46,34 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	IndicatorList struct {
-		Indicatorcode func(childComplexity int) int
-		Indicatorname func(childComplexity int) int
+	Indicator struct {
+		Code func(childComplexity int) int
+		Name func(childComplexity int) int
+	}
+
+	IndicatorBarRaceRow struct {
+		Country func(childComplexity int) int
+		Value   func(childComplexity int) int
+		Year    func(childComplexity int) int
+	}
+
+	IndicatorYear struct {
+		Year func(childComplexity int) int
 	}
 
 	Query struct {
-		GetIndicatorList func(childComplexity int, search string, limit int32, offset int32) int
 		Hello            func(childComplexity int) int
+		IndicatorBarRace func(childComplexity int, indicatorCode string, limitCountries int32) int
+		IndicatorYears   func(childComplexity int) int
+		Indicators       func(childComplexity int, search string, limit int32, offset int32) int
 	}
 }
 
 type QueryResolver interface {
 	Hello(ctx context.Context) (string, error)
-	GetIndicatorList(ctx context.Context, search string, limit int32, offset int32) ([]*model.IndicatorList, error)
+	Indicators(ctx context.Context, search string, limit int32, offset int32) ([]*model.Indicator, error)
+	IndicatorYears(ctx context.Context) ([]*model.IndicatorYear, error)
+	IndicatorBarRace(ctx context.Context, indicatorCode string, limitCountries int32) ([]*model.IndicatorBarRaceRow, error)
 }
 
 type executableSchema struct {
@@ -81,36 +95,79 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
-	case "IndicatorList.indicatorcode":
-		if e.complexity.IndicatorList.Indicatorcode == nil {
+	case "Indicator.code":
+		if e.complexity.Indicator.Code == nil {
 			break
 		}
 
-		return e.complexity.IndicatorList.Indicatorcode(childComplexity), true
-	case "IndicatorList.indicatorname":
-		if e.complexity.IndicatorList.Indicatorname == nil {
+		return e.complexity.Indicator.Code(childComplexity), true
+	case "Indicator.name":
+		if e.complexity.Indicator.Name == nil {
 			break
 		}
 
-		return e.complexity.IndicatorList.Indicatorname(childComplexity), true
+		return e.complexity.Indicator.Name(childComplexity), true
 
-	case "Query.GetIndicatorList":
-		if e.complexity.Query.GetIndicatorList == nil {
+	case "IndicatorBarRaceRow.country":
+		if e.complexity.IndicatorBarRaceRow.Country == nil {
 			break
 		}
 
-		args, err := ec.field_Query_GetIndicatorList_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
+		return e.complexity.IndicatorBarRaceRow.Country(childComplexity), true
+	case "IndicatorBarRaceRow.value":
+		if e.complexity.IndicatorBarRaceRow.Value == nil {
+			break
 		}
 
-		return e.complexity.Query.GetIndicatorList(childComplexity, args["search"].(string), args["limit"].(int32), args["offset"].(int32)), true
+		return e.complexity.IndicatorBarRaceRow.Value(childComplexity), true
+	case "IndicatorBarRaceRow.year":
+		if e.complexity.IndicatorBarRaceRow.Year == nil {
+			break
+		}
+
+		return e.complexity.IndicatorBarRaceRow.Year(childComplexity), true
+
+	case "IndicatorYear.year":
+		if e.complexity.IndicatorYear.Year == nil {
+			break
+		}
+
+		return e.complexity.IndicatorYear.Year(childComplexity), true
+
 	case "Query.hello":
 		if e.complexity.Query.Hello == nil {
 			break
 		}
 
 		return e.complexity.Query.Hello(childComplexity), true
+	case "Query.IndicatorBarRace":
+		if e.complexity.Query.IndicatorBarRace == nil {
+			break
+		}
+
+		args, err := ec.field_Query_IndicatorBarRace_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.IndicatorBarRace(childComplexity, args["indicatorCode"].(string), args["limitCountries"].(int32)), true
+	case "Query.IndicatorYears":
+		if e.complexity.Query.IndicatorYears == nil {
+			break
+		}
+
+		return e.complexity.Query.IndicatorYears(childComplexity), true
+	case "Query.Indicators":
+		if e.complexity.Query.Indicators == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Indicators_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Indicators(childComplexity, args["search"].(string), args["limit"].(int32), args["offset"].(int32)), true
 
 	}
 	return 0, false
@@ -220,7 +277,23 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Query_GetIndicatorList_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Query_IndicatorBarRace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "indicatorCode", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["indicatorCode"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "limitCountries", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["limitCountries"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_Indicators_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "search", ec.unmarshalNString2string)
@@ -304,14 +377,14 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _IndicatorList_indicatorcode(ctx context.Context, field graphql.CollectedField, obj *model.IndicatorList) (ret graphql.Marshaler) {
+func (ec *executionContext) _Indicator_code(ctx context.Context, field graphql.CollectedField, obj *model.Indicator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_IndicatorList_indicatorcode,
+		ec.fieldContext_Indicator_code,
 		func(ctx context.Context) (any, error) {
-			return obj.Indicatorcode, nil
+			return obj.Code, nil
 		},
 		nil,
 		ec.marshalNString2string,
@@ -320,9 +393,9 @@ func (ec *executionContext) _IndicatorList_indicatorcode(ctx context.Context, fi
 	)
 }
 
-func (ec *executionContext) fieldContext_IndicatorList_indicatorcode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Indicator_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "IndicatorList",
+		Object:     "Indicator",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -333,14 +406,14 @@ func (ec *executionContext) fieldContext_IndicatorList_indicatorcode(_ context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _IndicatorList_indicatorname(ctx context.Context, field graphql.CollectedField, obj *model.IndicatorList) (ret graphql.Marshaler) {
+func (ec *executionContext) _Indicator_name(ctx context.Context, field graphql.CollectedField, obj *model.Indicator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_IndicatorList_indicatorname,
+		ec.fieldContext_Indicator_name,
 		func(ctx context.Context) (any, error) {
-			return obj.Indicatorname, nil
+			return obj.Name, nil
 		},
 		nil,
 		ec.marshalNString2string,
@@ -349,14 +422,130 @@ func (ec *executionContext) _IndicatorList_indicatorname(ctx context.Context, fi
 	)
 }
 
-func (ec *executionContext) fieldContext_IndicatorList_indicatorname(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Indicator_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "IndicatorList",
+		Object:     "Indicator",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _IndicatorBarRaceRow_year(ctx context.Context, field graphql.CollectedField, obj *model.IndicatorBarRaceRow) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndicatorBarRaceRow_year,
+		func(ctx context.Context) (any, error) {
+			return obj.Year, nil
+		},
+		nil,
+		ec.marshalNInt2int32,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndicatorBarRaceRow_year(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndicatorBarRaceRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _IndicatorBarRaceRow_country(ctx context.Context, field graphql.CollectedField, obj *model.IndicatorBarRaceRow) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndicatorBarRaceRow_country,
+		func(ctx context.Context) (any, error) {
+			return obj.Country, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndicatorBarRaceRow_country(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndicatorBarRaceRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _IndicatorBarRaceRow_value(ctx context.Context, field graphql.CollectedField, obj *model.IndicatorBarRaceRow) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndicatorBarRaceRow_value,
+		func(ctx context.Context) (any, error) {
+			return obj.Value, nil
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndicatorBarRaceRow_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndicatorBarRaceRow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _IndicatorYear_year(ctx context.Context, field graphql.CollectedField, obj *model.IndicatorYear) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_IndicatorYear_year,
+		func(ctx context.Context) (any, error) {
+			return obj.Year, nil
+		},
+		nil,
+		ec.marshalNInt2int32,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_IndicatorYear_year(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IndicatorYear",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -391,24 +580,24 @@ func (ec *executionContext) fieldContext_Query_hello(_ context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_GetIndicatorList(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_Indicators(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Query_GetIndicatorList,
+		ec.fieldContext_Query_Indicators,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().GetIndicatorList(ctx, fc.Args["search"].(string), fc.Args["limit"].(int32), fc.Args["offset"].(int32))
+			return ec.resolvers.Query().Indicators(ctx, fc.Args["search"].(string), fc.Args["limit"].(int32), fc.Args["offset"].(int32))
 		},
 		nil,
-		ec.marshalNIndicatorList2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorListᚄ,
+		ec.marshalNIndicator2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorᚄ,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_Query_GetIndicatorList(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_Indicators(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -416,12 +605,12 @@ func (ec *executionContext) fieldContext_Query_GetIndicatorList(ctx context.Cont
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "indicatorcode":
-				return ec.fieldContext_IndicatorList_indicatorcode(ctx, field)
-			case "indicatorname":
-				return ec.fieldContext_IndicatorList_indicatorname(ctx, field)
+			case "code":
+				return ec.fieldContext_Indicator_code(ctx, field)
+			case "name":
+				return ec.fieldContext_Indicator_name(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type IndicatorList", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Indicator", field.Name)
 		},
 	}
 	defer func() {
@@ -431,7 +620,89 @@ func (ec *executionContext) fieldContext_Query_GetIndicatorList(ctx context.Cont
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_GetIndicatorList_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_Indicators_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_IndicatorYears(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_IndicatorYears,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Query().IndicatorYears(ctx)
+		},
+		nil,
+		ec.marshalNIndicatorYear2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorYearᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_IndicatorYears(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "year":
+				return ec.fieldContext_IndicatorYear_year(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type IndicatorYear", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_IndicatorBarRace(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_IndicatorBarRace,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().IndicatorBarRace(ctx, fc.Args["indicatorCode"].(string), fc.Args["limitCountries"].(int32))
+		},
+		nil,
+		ec.marshalNIndicatorBarRaceRow2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorBarRaceRowᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_IndicatorBarRace(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "year":
+				return ec.fieldContext_IndicatorBarRaceRow_year(ctx, field)
+			case "country":
+				return ec.fieldContext_IndicatorBarRaceRow_country(ctx, field)
+			case "value":
+				return ec.fieldContext_IndicatorBarRaceRow_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type IndicatorBarRaceRow", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_IndicatorBarRace_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2000,24 +2271,112 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** object.gotpl ****************************
 
-var indicatorListImplementors = []string{"IndicatorList"}
+var indicatorImplementors = []string{"Indicator"}
 
-func (ec *executionContext) _IndicatorList(ctx context.Context, sel ast.SelectionSet, obj *model.IndicatorList) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, indicatorListImplementors)
+func (ec *executionContext) _Indicator(ctx context.Context, sel ast.SelectionSet, obj *model.Indicator) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, indicatorImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("IndicatorList")
-		case "indicatorcode":
-			out.Values[i] = ec._IndicatorList_indicatorcode(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("Indicator")
+		case "code":
+			out.Values[i] = ec._Indicator_code(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "indicatorname":
-			out.Values[i] = ec._IndicatorList_indicatorname(ctx, field, obj)
+		case "name":
+			out.Values[i] = ec._Indicator_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var indicatorBarRaceRowImplementors = []string{"IndicatorBarRaceRow"}
+
+func (ec *executionContext) _IndicatorBarRaceRow(ctx context.Context, sel ast.SelectionSet, obj *model.IndicatorBarRaceRow) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, indicatorBarRaceRowImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("IndicatorBarRaceRow")
+		case "year":
+			out.Values[i] = ec._IndicatorBarRaceRow_year(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "country":
+			out.Values[i] = ec._IndicatorBarRaceRow_country(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "value":
+			out.Values[i] = ec._IndicatorBarRaceRow_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var indicatorYearImplementors = []string{"IndicatorYear"}
+
+func (ec *executionContext) _IndicatorYear(ctx context.Context, sel ast.SelectionSet, obj *model.IndicatorYear) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, indicatorYearImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("IndicatorYear")
+		case "year":
+			out.Values[i] = ec._IndicatorYear_year(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -2085,7 +2444,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "GetIndicatorList":
+		case "Indicators":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -2094,7 +2453,51 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_GetIndicatorList(ctx, field)
+				res = ec._Query_Indicators(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "IndicatorYears":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_IndicatorYears(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "IndicatorBarRace":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_IndicatorBarRace(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -2489,7 +2892,23 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNIndicatorList2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorListᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.IndicatorList) graphql.Marshaler {
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) marshalNIndicator2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Indicator) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2513,7 +2932,7 @@ func (ec *executionContext) marshalNIndicatorList2ᚕᚖwdiᚋinternalᚋinterfa
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNIndicatorList2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorList(ctx, sel, v[i])
+			ret[i] = ec.marshalNIndicator2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicator(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2533,14 +2952,122 @@ func (ec *executionContext) marshalNIndicatorList2ᚕᚖwdiᚋinternalᚋinterfa
 	return ret
 }
 
-func (ec *executionContext) marshalNIndicatorList2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorList(ctx context.Context, sel ast.SelectionSet, v *model.IndicatorList) graphql.Marshaler {
+func (ec *executionContext) marshalNIndicator2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicator(ctx context.Context, sel ast.SelectionSet, v *model.Indicator) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._IndicatorList(ctx, sel, v)
+	return ec._Indicator(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNIndicatorBarRaceRow2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorBarRaceRowᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.IndicatorBarRaceRow) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNIndicatorBarRaceRow2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorBarRaceRow(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNIndicatorBarRaceRow2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorBarRaceRow(ctx context.Context, sel ast.SelectionSet, v *model.IndicatorBarRaceRow) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._IndicatorBarRaceRow(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNIndicatorYear2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorYearᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.IndicatorYear) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNIndicatorYear2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorYear(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNIndicatorYear2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorYear(ctx context.Context, sel ast.SelectionSet, v *model.IndicatorYear) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._IndicatorYear(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v any) (int32, error) {

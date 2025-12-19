@@ -2,9 +2,19 @@
 
 package model
 
-type IndicatorList struct {
-	Indicatorcode string `json:"indicatorcode"`
-	Indicatorname string `json:"indicatorname"`
+type Indicator struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type IndicatorBarRaceRow struct {
+	Year    int32   `json:"year"`
+	Country string  `json:"country"`
+	Value   float64 `json:"value"`
+}
+
+type IndicatorYear struct {
+	Year int32 `json:"year"`
 }
 
 type Query struct {

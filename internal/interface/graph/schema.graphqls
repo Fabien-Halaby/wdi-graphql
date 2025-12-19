@@ -1,10 +1,23 @@
-type IndicatorList {
-  indicatorcode: String!
-  indicatorname: String!
+type Indicator {
+  code: String!
+  name: String!
+}
+
+type IndicatorYear {
+  year: Int!
+}
+
+type IndicatorBarRaceRow {
+  year: Int!
+  country: String!
+  value: Float!
 }
 
 type Query {
   hello: String!
 
-  GetIndicatorList(search: String!, limit: Int!, offset: Int!): [IndicatorList!]!
+  Indicators(search: String!, limit: Int!, offset: Int!): [Indicator!]!
+  IndicatorYears: [IndicatorYear!]!
+
+  IndicatorBarRace(indicatorCode: String!, limitCountries: Int!): [IndicatorBarRaceRow!]!
 }
