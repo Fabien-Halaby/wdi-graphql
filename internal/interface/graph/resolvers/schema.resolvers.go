@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"wdi/internal/interface/graph"
 	"wdi/internal/interface/graph/model"
 )
@@ -28,6 +29,41 @@ func (r *queryResolver) IndicatorYears(ctx context.Context) ([]*model.IndicatorY
 // IndicatorBarRace is the resolver for the IndicatorBarRace field.
 func (r *queryResolver) IndicatorBarRace(ctx context.Context, indicatorCode string, limitCountries int32) ([]*model.IndicatorBarRaceRow, error) {
 	return r.IndicatorUC.ListIndicatorBarRace(indicatorCode, limitCountries)
+}
+
+// HeatMapCountryYearByIndicator is the resolver for the HeatMapCountryYearByIndicator field.
+func (r *queryResolver) HeatMapCountryYearByIndicator(ctx context.Context, indicatorCode string, yearFrom int32, yearTo int32, limitRows int32, countryCodes []string) ([]*model.HeatMapCell, error) {
+	return r.IndicatorUC.HeatMapCountryYearByIndicator(indicatorCode, yearFrom, yearTo, limitRows, countryCodes)
+}
+
+// HeatMapCountryIndicatorByYear is the resolver for the HeatMapCountryIndicatorByYear field.
+func (r *queryResolver) HeatMapCountryIndicatorByYear(ctx context.Context, year int32, searchIndicator string, limitRows int32, limitCols int32, countryCodes []string) ([]*model.HeatMapCell, error) {
+	return r.IndicatorUC.HeatMapCountryIndicatorByYear(year, searchIndicator, limitRows, limitCols, countryCodes)
+}
+
+// MapIndicatorYear is the resolver for the MapIndicatorYear field.
+func (r *queryResolver) MapIndicatorYear(ctx context.Context, indicatorCode string, year int32) ([]*model.CountryMapDatum, error) {
+	return r.IndicatorUC.MapIndicatorYear(indicatorCode, year)
+}
+
+// Countries is the resolver for the Countries field.
+func (r *queryResolver) Countries(ctx context.Context, search string, limit int32, offset int32) ([]*model.Country, error) {
+	var countries []*model.Country
+	query := r.DB.Raw("SELECT countrycode AS id, countryname AS name FROM mv_countrie").Find(&countries)
+	if query.Error != nil {
+		return nil, fmt.Errorf("failed to fetch countries: %v", query.Error)
+	}
+	return countries, nil
+}
+
+// CountryIndicator is the resolver for the CountryIndicator field.
+func (r *queryResolver) CountryIndicator(ctx context.Context, countryCode string, yearFrom int32, yearTo int32, searchIndicator string, limitIndicators int32) ([]*model.CountryIndicatorValue, error) {
+	return r.IndicatorUC.ListCountryIndicators(countryCode, yearFrom, yearTo, searchIndicator, limitIndicators)
+}
+
+// CountryIndicatorSeries is the resolver for the CountryIndicatorSeries field.
+func (r *queryResolver) CountryIndicatorSeries(ctx context.Context, countryCode string, indicatorCode string, yearFrom int32, yearTo int32) ([]*model.CountryIndicatorValue, error) {
+	return r.IndicatorUC.CountryIndicatorSeries(countryCode, indicatorCode, yearFrom, yearTo)
 }
 
 // Query returns graph.QueryResolver implementation.

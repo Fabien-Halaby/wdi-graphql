@@ -2,6 +2,31 @@
 
 package model
 
+type Country struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type CountryIndicatorValue struct {
+	Countrycode   string  `json:"countrycode"`
+	Countryname   string  `json:"countryname"`
+	Indicatorcode string  `json:"indicatorcode"`
+	Indicatorname string  `json:"indicatorname"`
+	Year          int32   `json:"year"`
+	Value         float64 `json:"value"`
+}
+
+type CountryMapDatum struct {
+	ID    string  `json:"id"`
+	Value float64 `json:"value"`
+}
+
+type HeatMapCell struct {
+	Row   string   `json:"row"`
+	Col   string   `json:"col"`
+	Value *float64 `json:"value,omitempty"`
+}
+
 type Indicator struct {
 	Code string `json:"code"`
 	Name string `json:"name"`

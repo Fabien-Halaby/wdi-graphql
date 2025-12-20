@@ -2,6 +2,8 @@ package resolvers
 
 import (
 	"wdi/internal/usecase"
+
+	"gorm.io/gorm"
 )
 
 // This file will not be regenerated automatically.
@@ -10,4 +12,5 @@ import (
 
 type Resolver struct {
 	IndicatorUC *usecase.IndicatorUsecase
+	DB          *gorm.DB
 }

@@ -30,6 +30,7 @@ func main() {
 	//! Set up the GraphQL server
 	resolvers := &resolvers.Resolver{
 		IndicatorUC: indicatorUC,
+		DB:          db,
 	}
 	srv := handler.NewDefaultServer(
 		graph.NewExecutableSchema(

@@ -46,6 +46,31 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Country struct {
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
+	}
+
+	CountryIndicatorValue struct {
+		Countrycode   func(childComplexity int) int
+		Countryname   func(childComplexity int) int
+		Indicatorcode func(childComplexity int) int
+		Indicatorname func(childComplexity int) int
+		Value         func(childComplexity int) int
+		Year          func(childComplexity int) int
+	}
+
+	CountryMapDatum struct {
+		ID    func(childComplexity int) int
+		Value func(childComplexity int) int
+	}
+
+	HeatMapCell struct {
+		Col   func(childComplexity int) int
+		Row   func(childComplexity int) int
+		Value func(childComplexity int) int
+	}
+
 	Indicator struct {
 		Code func(childComplexity int) int
 		Name func(childComplexity int) int
@@ -62,10 +87,16 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Hello            func(childComplexity int) int
-		IndicatorBarRace func(childComplexity int, indicatorCode string, limitCountries int32) int
-		IndicatorYears   func(childComplexity int) int
-		Indicators       func(childComplexity int, search string, limit int32, offset int32) int
+		Countries                     func(childComplexity int, search string, limit int32, offset int32) int
+		CountryIndicator              func(childComplexity int, countryCode string, yearFrom int32, yearTo int32, searchIndicator string, limitIndicators int32) int
+		CountryIndicatorSeries        func(childComplexity int, countryCode string, indicatorCode string, yearFrom int32, yearTo int32) int
+		HeatMapCountryIndicatorByYear func(childComplexity int, year int32, searchIndicator string, limitRows int32, limitCols int32, countryCodes []string) int
+		HeatMapCountryYearByIndicator func(childComplexity int, indicatorCode string, yearFrom int32, yearTo int32, limitRows int32, countryCodes []string) int
+		Hello                         func(childComplexity int) int
+		IndicatorBarRace              func(childComplexity int, indicatorCode string, limitCountries int32) int
+		IndicatorYears                func(childComplexity int) int
+		Indicators                    func(childComplexity int, search string, limit int32, offset int32) int
+		MapIndicatorYear              func(childComplexity int, indicatorCode string, year int32) int
 	}
 }
 
@@ -74,6 +105,12 @@ type QueryResolver interface {
 	Indicators(ctx context.Context, search string, limit int32, offset int32) ([]*model.Indicator, error)
 	IndicatorYears(ctx context.Context) ([]*model.IndicatorYear, error)
 	IndicatorBarRace(ctx context.Context, indicatorCode string, limitCountries int32) ([]*model.IndicatorBarRaceRow, error)
+	HeatMapCountryYearByIndicator(ctx context.Context, indicatorCode string, yearFrom int32, yearTo int32, limitRows int32, countryCodes []string) ([]*model.HeatMapCell, error)
+	HeatMapCountryIndicatorByYear(ctx context.Context, year int32, searchIndicator string, limitRows int32, limitCols int32, countryCodes []string) ([]*model.HeatMapCell, error)
+	MapIndicatorYear(ctx context.Context, indicatorCode string, year int32) ([]*model.CountryMapDatum, error)
+	Countries(ctx context.Context, search string, limit int32, offset int32) ([]*model.Country, error)
+	CountryIndicator(ctx context.Context, countryCode string, yearFrom int32, yearTo int32, searchIndicator string, limitIndicators int32) ([]*model.CountryIndicatorValue, error)
+	CountryIndicatorSeries(ctx context.Context, countryCode string, indicatorCode string, yearFrom int32, yearTo int32) ([]*model.CountryIndicatorValue, error)
 }
 
 type executableSchema struct {
@@ -94,6 +131,88 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Country.id":
+		if e.complexity.Country.ID == nil {
+			break
+		}
+
+		return e.complexity.Country.ID(childComplexity), true
+	case "Country.name":
+		if e.complexity.Country.Name == nil {
+			break
+		}
+
+		return e.complexity.Country.Name(childComplexity), true
+
+	case "CountryIndicatorValue.countrycode":
+		if e.complexity.CountryIndicatorValue.Countrycode == nil {
+			break
+		}
+
+		return e.complexity.CountryIndicatorValue.Countrycode(childComplexity), true
+	case "CountryIndicatorValue.countryname":
+		if e.complexity.CountryIndicatorValue.Countryname == nil {
+			break
+		}
+
+		return e.complexity.CountryIndicatorValue.Countryname(childComplexity), true
+	case "CountryIndicatorValue.indicatorcode":
+		if e.complexity.CountryIndicatorValue.Indicatorcode == nil {
+			break
+		}
+
+		return e.complexity.CountryIndicatorValue.Indicatorcode(childComplexity), true
+	case "CountryIndicatorValue.indicatorname":
+		if e.complexity.CountryIndicatorValue.Indicatorname == nil {
+			break
+		}
+
+		return e.complexity.CountryIndicatorValue.Indicatorname(childComplexity), true
+	case "CountryIndicatorValue.value":
+		if e.complexity.CountryIndicatorValue.Value == nil {
+			break
+		}
+
+		return e.complexity.CountryIndicatorValue.Value(childComplexity), true
+	case "CountryIndicatorValue.year":
+		if e.complexity.CountryIndicatorValue.Year == nil {
+			break
+		}
+
+		return e.complexity.CountryIndicatorValue.Year(childComplexity), true
+
+	case "CountryMapDatum.id":
+		if e.complexity.CountryMapDatum.ID == nil {
+			break
+		}
+
+		return e.complexity.CountryMapDatum.ID(childComplexity), true
+	case "CountryMapDatum.value":
+		if e.complexity.CountryMapDatum.Value == nil {
+			break
+		}
+
+		return e.complexity.CountryMapDatum.Value(childComplexity), true
+
+	case "HeatMapCell.col":
+		if e.complexity.HeatMapCell.Col == nil {
+			break
+		}
+
+		return e.complexity.HeatMapCell.Col(childComplexity), true
+	case "HeatMapCell.row":
+		if e.complexity.HeatMapCell.Row == nil {
+			break
+		}
+
+		return e.complexity.HeatMapCell.Row(childComplexity), true
+	case "HeatMapCell.value":
+		if e.complexity.HeatMapCell.Value == nil {
+			break
+		}
+
+		return e.complexity.HeatMapCell.Value(childComplexity), true
 
 	case "Indicator.code":
 		if e.complexity.Indicator.Code == nil {
@@ -134,6 +253,61 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.IndicatorYear.Year(childComplexity), true
 
+	case "Query.Countries":
+		if e.complexity.Query.Countries == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Countries_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Countries(childComplexity, args["search"].(string), args["limit"].(int32), args["offset"].(int32)), true
+	case "Query.CountryIndicator":
+		if e.complexity.Query.CountryIndicator == nil {
+			break
+		}
+
+		args, err := ec.field_Query_CountryIndicator_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.CountryIndicator(childComplexity, args["countryCode"].(string), args["yearFrom"].(int32), args["yearTo"].(int32), args["searchIndicator"].(string), args["limitIndicators"].(int32)), true
+	case "Query.CountryIndicatorSeries":
+		if e.complexity.Query.CountryIndicatorSeries == nil {
+			break
+		}
+
+		args, err := ec.field_Query_CountryIndicatorSeries_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.CountryIndicatorSeries(childComplexity, args["countryCode"].(string), args["indicatorCode"].(string), args["yearFrom"].(int32), args["yearTo"].(int32)), true
+	case "Query.HeatMapCountryIndicatorByYear":
+		if e.complexity.Query.HeatMapCountryIndicatorByYear == nil {
+			break
+		}
+
+		args, err := ec.field_Query_HeatMapCountryIndicatorByYear_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.HeatMapCountryIndicatorByYear(childComplexity, args["year"].(int32), args["searchIndicator"].(string), args["limitRows"].(int32), args["limitCols"].(int32), args["countryCodes"].([]string)), true
+	case "Query.HeatMapCountryYearByIndicator":
+		if e.complexity.Query.HeatMapCountryYearByIndicator == nil {
+			break
+		}
+
+		args, err := ec.field_Query_HeatMapCountryYearByIndicator_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.HeatMapCountryYearByIndicator(childComplexity, args["indicatorCode"].(string), args["yearFrom"].(int32), args["yearTo"].(int32), args["limitRows"].(int32), args["countryCodes"].([]string)), true
 	case "Query.hello":
 		if e.complexity.Query.Hello == nil {
 			break
@@ -168,6 +342,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.Indicators(childComplexity, args["search"].(string), args["limit"].(int32), args["offset"].(int32)), true
+	case "Query.MapIndicatorYear":
+		if e.complexity.Query.MapIndicatorYear == nil {
+			break
+		}
+
+		args, err := ec.field_Query_MapIndicatorYear_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.MapIndicatorYear(childComplexity, args["indicatorCode"].(string), args["year"].(int32)), true
 
 	}
 	return 0, false
@@ -277,6 +462,146 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Query_Countries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "search", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["search"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "limit", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "offset", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["offset"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_CountryIndicatorSeries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "countryCode", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["countryCode"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "indicatorCode", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["indicatorCode"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "yearFrom", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["yearFrom"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "yearTo", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["yearTo"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_CountryIndicator_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "countryCode", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["countryCode"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "yearFrom", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["yearFrom"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "yearTo", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["yearTo"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "searchIndicator", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["searchIndicator"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "limitIndicators", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["limitIndicators"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_HeatMapCountryIndicatorByYear_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "year", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["year"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "searchIndicator", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["searchIndicator"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "limitRows", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["limitRows"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "limitCols", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["limitCols"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "countryCodes", ec.unmarshalOString2ᚕstringᚄ)
+	if err != nil {
+		return nil, err
+	}
+	args["countryCodes"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_HeatMapCountryYearByIndicator_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "indicatorCode", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["indicatorCode"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "yearFrom", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["yearFrom"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "yearTo", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["yearTo"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "limitRows", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["limitRows"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "countryCodes", ec.unmarshalOString2ᚕstringᚄ)
+	if err != nil {
+		return nil, err
+	}
+	args["countryCodes"] = arg4
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_IndicatorBarRace_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -311,6 +636,22 @@ func (ec *executionContext) field_Query_Indicators_args(ctx context.Context, raw
 		return nil, err
 	}
 	args["offset"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_MapIndicatorYear_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "indicatorCode", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["indicatorCode"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "year", ec.unmarshalNInt2int32)
+	if err != nil {
+		return nil, err
+	}
+	args["year"] = arg1
 	return args, nil
 }
 
@@ -376,6 +717,383 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Country_id(ctx context.Context, field graphql.CollectedField, obj *model.Country) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Country_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Country_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Country",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Country_name(ctx context.Context, field graphql.CollectedField, obj *model.Country) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Country_name,
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Country_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Country",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryIndicatorValue_countrycode(ctx context.Context, field graphql.CollectedField, obj *model.CountryIndicatorValue) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CountryIndicatorValue_countrycode,
+		func(ctx context.Context) (any, error) {
+			return obj.Countrycode, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CountryIndicatorValue_countrycode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryIndicatorValue",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryIndicatorValue_countryname(ctx context.Context, field graphql.CollectedField, obj *model.CountryIndicatorValue) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CountryIndicatorValue_countryname,
+		func(ctx context.Context) (any, error) {
+			return obj.Countryname, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CountryIndicatorValue_countryname(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryIndicatorValue",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryIndicatorValue_indicatorcode(ctx context.Context, field graphql.CollectedField, obj *model.CountryIndicatorValue) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CountryIndicatorValue_indicatorcode,
+		func(ctx context.Context) (any, error) {
+			return obj.Indicatorcode, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CountryIndicatorValue_indicatorcode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryIndicatorValue",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryIndicatorValue_indicatorname(ctx context.Context, field graphql.CollectedField, obj *model.CountryIndicatorValue) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CountryIndicatorValue_indicatorname,
+		func(ctx context.Context) (any, error) {
+			return obj.Indicatorname, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CountryIndicatorValue_indicatorname(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryIndicatorValue",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryIndicatorValue_year(ctx context.Context, field graphql.CollectedField, obj *model.CountryIndicatorValue) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CountryIndicatorValue_year,
+		func(ctx context.Context) (any, error) {
+			return obj.Year, nil
+		},
+		nil,
+		ec.marshalNInt2int32,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CountryIndicatorValue_year(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryIndicatorValue",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryIndicatorValue_value(ctx context.Context, field graphql.CollectedField, obj *model.CountryIndicatorValue) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CountryIndicatorValue_value,
+		func(ctx context.Context) (any, error) {
+			return obj.Value, nil
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CountryIndicatorValue_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryIndicatorValue",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryMapDatum_id(ctx context.Context, field graphql.CollectedField, obj *model.CountryMapDatum) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CountryMapDatum_id,
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CountryMapDatum_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryMapDatum",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CountryMapDatum_value(ctx context.Context, field graphql.CollectedField, obj *model.CountryMapDatum) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_CountryMapDatum_value,
+		func(ctx context.Context) (any, error) {
+			return obj.Value, nil
+		},
+		nil,
+		ec.marshalNFloat2float64,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_CountryMapDatum_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CountryMapDatum",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HeatMapCell_row(ctx context.Context, field graphql.CollectedField, obj *model.HeatMapCell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HeatMapCell_row,
+		func(ctx context.Context) (any, error) {
+			return obj.Row, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_HeatMapCell_row(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HeatMapCell",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HeatMapCell_col(ctx context.Context, field graphql.CollectedField, obj *model.HeatMapCell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HeatMapCell_col,
+		func(ctx context.Context) (any, error) {
+			return obj.Col, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_HeatMapCell_col(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HeatMapCell",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HeatMapCell_value(ctx context.Context, field graphql.CollectedField, obj *model.HeatMapCell) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_HeatMapCell_value,
+		func(ctx context.Context) (any, error) {
+			return obj.Value, nil
+		},
+		nil,
+		ec.marshalOFloat2ᚖfloat64,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_HeatMapCell_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HeatMapCell",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Indicator_code(ctx context.Context, field graphql.CollectedField, obj *model.Indicator) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
@@ -703,6 +1421,308 @@ func (ec *executionContext) fieldContext_Query_IndicatorBarRace(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_IndicatorBarRace_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_HeatMapCountryYearByIndicator(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_HeatMapCountryYearByIndicator,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().HeatMapCountryYearByIndicator(ctx, fc.Args["indicatorCode"].(string), fc.Args["yearFrom"].(int32), fc.Args["yearTo"].(int32), fc.Args["limitRows"].(int32), fc.Args["countryCodes"].([]string))
+		},
+		nil,
+		ec.marshalNHeatMapCell2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐHeatMapCellᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_HeatMapCountryYearByIndicator(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "row":
+				return ec.fieldContext_HeatMapCell_row(ctx, field)
+			case "col":
+				return ec.fieldContext_HeatMapCell_col(ctx, field)
+			case "value":
+				return ec.fieldContext_HeatMapCell_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HeatMapCell", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_HeatMapCountryYearByIndicator_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_HeatMapCountryIndicatorByYear(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_HeatMapCountryIndicatorByYear,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().HeatMapCountryIndicatorByYear(ctx, fc.Args["year"].(int32), fc.Args["searchIndicator"].(string), fc.Args["limitRows"].(int32), fc.Args["limitCols"].(int32), fc.Args["countryCodes"].([]string))
+		},
+		nil,
+		ec.marshalNHeatMapCell2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐHeatMapCellᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_HeatMapCountryIndicatorByYear(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "row":
+				return ec.fieldContext_HeatMapCell_row(ctx, field)
+			case "col":
+				return ec.fieldContext_HeatMapCell_col(ctx, field)
+			case "value":
+				return ec.fieldContext_HeatMapCell_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HeatMapCell", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_HeatMapCountryIndicatorByYear_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_MapIndicatorYear(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_MapIndicatorYear,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().MapIndicatorYear(ctx, fc.Args["indicatorCode"].(string), fc.Args["year"].(int32))
+		},
+		nil,
+		ec.marshalNCountryMapDatum2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryMapDatumᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_MapIndicatorYear(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CountryMapDatum_id(ctx, field)
+			case "value":
+				return ec.fieldContext_CountryMapDatum_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CountryMapDatum", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_MapIndicatorYear_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_Countries(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_Countries,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().Countries(ctx, fc.Args["search"].(string), fc.Args["limit"].(int32), fc.Args["offset"].(int32))
+		},
+		nil,
+		ec.marshalNCountry2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_Countries(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Country_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Country_name(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Country", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_Countries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_CountryIndicator(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_CountryIndicator,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().CountryIndicator(ctx, fc.Args["countryCode"].(string), fc.Args["yearFrom"].(int32), fc.Args["yearTo"].(int32), fc.Args["searchIndicator"].(string), fc.Args["limitIndicators"].(int32))
+		},
+		nil,
+		ec.marshalNCountryIndicatorValue2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryIndicatorValueᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_CountryIndicator(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "countrycode":
+				return ec.fieldContext_CountryIndicatorValue_countrycode(ctx, field)
+			case "countryname":
+				return ec.fieldContext_CountryIndicatorValue_countryname(ctx, field)
+			case "indicatorcode":
+				return ec.fieldContext_CountryIndicatorValue_indicatorcode(ctx, field)
+			case "indicatorname":
+				return ec.fieldContext_CountryIndicatorValue_indicatorname(ctx, field)
+			case "year":
+				return ec.fieldContext_CountryIndicatorValue_year(ctx, field)
+			case "value":
+				return ec.fieldContext_CountryIndicatorValue_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CountryIndicatorValue", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_CountryIndicator_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_CountryIndicatorSeries(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_CountryIndicatorSeries,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Query().CountryIndicatorSeries(ctx, fc.Args["countryCode"].(string), fc.Args["indicatorCode"].(string), fc.Args["yearFrom"].(int32), fc.Args["yearTo"].(int32))
+		},
+		nil,
+		ec.marshalNCountryIndicatorValue2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryIndicatorValueᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_CountryIndicatorSeries(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "countrycode":
+				return ec.fieldContext_CountryIndicatorValue_countrycode(ctx, field)
+			case "countryname":
+				return ec.fieldContext_CountryIndicatorValue_countryname(ctx, field)
+			case "indicatorcode":
+				return ec.fieldContext_CountryIndicatorValue_indicatorcode(ctx, field)
+			case "indicatorname":
+				return ec.fieldContext_CountryIndicatorValue_indicatorname(ctx, field)
+			case "year":
+				return ec.fieldContext_CountryIndicatorValue_year(ctx, field)
+			case "value":
+				return ec.fieldContext_CountryIndicatorValue_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CountryIndicatorValue", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_CountryIndicatorSeries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2271,6 +3291,204 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** object.gotpl ****************************
 
+var countryImplementors = []string{"Country"}
+
+func (ec *executionContext) _Country(ctx context.Context, sel ast.SelectionSet, obj *model.Country) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, countryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Country")
+		case "id":
+			out.Values[i] = ec._Country_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Country_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var countryIndicatorValueImplementors = []string{"CountryIndicatorValue"}
+
+func (ec *executionContext) _CountryIndicatorValue(ctx context.Context, sel ast.SelectionSet, obj *model.CountryIndicatorValue) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, countryIndicatorValueImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CountryIndicatorValue")
+		case "countrycode":
+			out.Values[i] = ec._CountryIndicatorValue_countrycode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "countryname":
+			out.Values[i] = ec._CountryIndicatorValue_countryname(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "indicatorcode":
+			out.Values[i] = ec._CountryIndicatorValue_indicatorcode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "indicatorname":
+			out.Values[i] = ec._CountryIndicatorValue_indicatorname(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "year":
+			out.Values[i] = ec._CountryIndicatorValue_year(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "value":
+			out.Values[i] = ec._CountryIndicatorValue_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var countryMapDatumImplementors = []string{"CountryMapDatum"}
+
+func (ec *executionContext) _CountryMapDatum(ctx context.Context, sel ast.SelectionSet, obj *model.CountryMapDatum) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, countryMapDatumImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CountryMapDatum")
+		case "id":
+			out.Values[i] = ec._CountryMapDatum_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "value":
+			out.Values[i] = ec._CountryMapDatum_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var heatMapCellImplementors = []string{"HeatMapCell"}
+
+func (ec *executionContext) _HeatMapCell(ctx context.Context, sel ast.SelectionSet, obj *model.HeatMapCell) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, heatMapCellImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("HeatMapCell")
+		case "row":
+			out.Values[i] = ec._HeatMapCell_row(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "col":
+			out.Values[i] = ec._HeatMapCell_col(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "value":
+			out.Values[i] = ec._HeatMapCell_value(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var indicatorImplementors = []string{"Indicator"}
 
 func (ec *executionContext) _Indicator(ctx context.Context, sel ast.SelectionSet, obj *model.Indicator) graphql.Marshaler {
@@ -2498,6 +3716,138 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_IndicatorBarRace(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "HeatMapCountryYearByIndicator":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_HeatMapCountryYearByIndicator(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "HeatMapCountryIndicatorByYear":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_HeatMapCountryIndicatorByYear(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "MapIndicatorYear":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_MapIndicatorYear(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "Countries":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_Countries(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "CountryIndicator":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_CountryIndicator(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "CountryIndicatorSeries":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_CountryIndicatorSeries(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -2892,6 +4242,168 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNCountry2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Country) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCountry2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountry(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCountry2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountry(ctx context.Context, sel ast.SelectionSet, v *model.Country) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Country(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNCountryIndicatorValue2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryIndicatorValueᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CountryIndicatorValue) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCountryIndicatorValue2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryIndicatorValue(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCountryIndicatorValue2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryIndicatorValue(ctx context.Context, sel ast.SelectionSet, v *model.CountryIndicatorValue) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CountryIndicatorValue(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNCountryMapDatum2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryMapDatumᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CountryMapDatum) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCountryMapDatum2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryMapDatum(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCountryMapDatum2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐCountryMapDatum(ctx context.Context, sel ast.SelectionSet, v *model.CountryMapDatum) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CountryMapDatum(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
 	res, err := graphql.UnmarshalFloatContext(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2906,6 +4418,60 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 		}
 	}
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) marshalNHeatMapCell2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐHeatMapCellᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.HeatMapCell) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNHeatMapCell2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐHeatMapCell(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNHeatMapCell2ᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐHeatMapCell(ctx context.Context, sel ast.SelectionSet, v *model.HeatMapCell) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._HeatMapCell(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNIndicator2ᚕᚖwdiᚋinternalᚋinterfaceᚋgraphᚋmodelᚐIndicatorᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Indicator) graphql.Marshaler {
@@ -3383,6 +4949,59 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	res := graphql.MarshalFloatContext(*v)
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

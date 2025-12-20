@@ -21,3 +21,75 @@ type Query {
 
   IndicatorBarRace(indicatorCode: String!, limitCountries: Int!): [IndicatorBarRaceRow!]!
 }
+
+type HeatMapCell {
+  row: String!
+  col: String!
+  value: Float
+}
+
+extend type Query {
+  # Option A: rows=pays, cols=années, 1 indicateur
+  HeatMapCountryYearByIndicator(
+    indicatorCode: String!
+    yearFrom: Int!
+    yearTo: Int!
+    limitRows: Int!
+    countryCodes: [String!]
+  ): [HeatMapCell!]!
+
+  # Option B: rows=pays, cols=indicateurs, 1 année
+  HeatMapCountryIndicatorByYear(
+    year: Int!
+    searchIndicator: String!
+    limitRows: Int!
+    limitCols: Int!
+    countryCodes: [String!]
+  ): [HeatMapCell!]!
+}
+
+
+type CountryMapDatum {
+  id: String!
+  value: Float!
+}
+
+extend type Query {
+  MapIndicatorYear(indicatorCode: String!, year: Int!): [CountryMapDatum!]!
+}
+
+type Country {
+  id: String!
+  name: String!
+}
+
+extend type Query {
+  Countries(search: String!, limit: Int!, offset: Int!): [Country!]!
+}
+
+
+type CountryIndicatorValue {
+  countrycode: String!
+  countryname: String!
+  indicatorcode: String!
+  indicatorname: String!
+  year: Int!
+  value: Float!
+}
+
+extend type Query {
+  CountryIndicator (
+    countryCode: String!
+    yearFrom: Int!
+    yearTo: Int!
+    searchIndicator: String!
+    limitIndicators: Int!
+  ): [CountryIndicatorValue!]!
+
+  CountryIndicatorSeries (
+    countryCode: String!
+    indicatorCode: String!
+    yearFrom: Int!
+    yearTo: Int!
+  ): [CountryIndicatorValue!]!
+}
